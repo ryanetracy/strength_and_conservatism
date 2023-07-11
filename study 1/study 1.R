@@ -4,15 +4,26 @@
 # body composition and politics
 #################################
 
-pckgs <- c('lme4', 'lmerTest', 'rstatix', 'haven', 'psych', 'car', 'tidyverse', 
-           'ggcorrplot', 'effectsize', 'ggpubr')
+pckgs <- c(
+  'lme4',
+  'lmerTest',
+  'rstatix',
+  'haven',
+  'psych',
+  'car',
+  'tidyverse',
+  'ggcorrplot',
+  'effectsize',
+  'ggpubr'
+)
 
-for (i in 1:length(pckgs)) {
-  if (!(pckgs[[i]] %in% installed.packages())) {
-    install.packages(pckgs[[i]])
+for (p in pckgs) {
+  if (!(p %in% installed.packages())) {
+    install.packages(p)
   }
-  lapply(pckgs[[i]], library, character.only = T)
+  lapply(p, library, character.only = T)
 }
+
 
 df <- read_sav('study 1/Strength Politics.sav')
 
@@ -143,16 +154,26 @@ standardize_parameters(check_1)
 
 # grab only conservatism columns
 df_main <- df_long %>%
-  select(Number, stim_id, strength, str_c, fiscal_conservatism, social_conservatism) %>%
+  select(Number,
+         stim_id,
+         strength,
+         str_c,
+         fiscal_conservatism,
+         social_conservatism) %>%
   pivot_longer(
     cols = fiscal_conservatism:social_conservatism,
     names_to = 'conservatism_type',
     values_to = 'rating'
   ) %>%
-  mutate(conservatism_type = ifelse(conservatism_type == 'fiscal_conservatism', 'fiscal', 'social'),
-         con_c = ifelse(conservatism_type == 'fiscal', 1, -1))
+  mutate(
+    conservatism_type = ifelse(
+      conservatism_type == 'fiscal_conservatism', 'fiscal', 'social'),
+    con_c = ifelse(conservatism_type == 'fiscal', 1, -1)
+  )
 
-mod_1 <- lmer(rating ~ str_c * con_c + (1|Number) + (1|stim_id), data = df_main)
+mod_1 <- lmer(rating ~ str_c * con_c 
+              + (str_c|Number) + (1|stim_id),
+              data = df_main)
 summary(mod_1)
 standardize_parameters(mod_1)
 
@@ -168,13 +189,29 @@ plot_summ <- df_main %>%
 
 df_main %>%
   ggplot(aes(strength, rating, fill = conservatism_type)) +
-  geom_point(alpha = .25, size = .5, position = position_jitterdodge(.15, .15, .9), shape = 4) +
-  geom_violin(alpha = .75, color = 'black', position = position_dodge(.9)) +
-  geom_point(data = plot_summ, aes(strength, mean),
-             alpha = .8, shape = 7, size = 3, position = position_dodge(.9), color = '#ffffff') +
-  geom_errorbar(data = plot_summ, aes(x = strength, y = mean,
-                                          ymin = mean - ci, ymax = mean + ci),
-                alpha = .7, width = .15, position = position_dodge(.9), color = '#ffffff') +
+  geom_point(alpha = .25,
+             size = .5,
+             position = position_jitterdodge(.15, .15, .9),
+             shape = 4) +
+  geom_violin(alpha = .75,
+              color = 'black',
+              position = position_dodge(.9)) +
+  geom_point(data = plot_summ,
+             aes(strength, mean),
+             alpha = .8,
+             shape = 7,
+             size = 3,
+             position = position_dodge(.9),
+             color = '#ffffff') +
+  geom_errorbar(data = plot_summ,
+                aes(x = strength,
+                    y = mean,
+                    ymin = mean - ci,
+                    ymax = mean + ci),
+                alpha = .7,
+                width = .15,
+                position = position_dodge(.9),
+                color = '#ffffff') +
   theme_classic() +
   labs(x = '',
        y = 'Conservatism Perception',
@@ -188,14 +225,16 @@ df_main %>%
   scale_y_continuous(breaks = seq(1, 7, 1)) +
   theme(legend.position = 'bottom')
 
-ggsave('study 1 conservatism plot 1.jpg', device = 'jpeg', path = 'study 1', units = 'cm')
+# ggsave('study 1 conservatism plot 1.jpg', device = 'jpeg', path = 'study 1', units = 'cm')
 
 
 
 # additional analyses (looking at conservatism separately and other measures)
 
 # conservatism
-fisc_con_mod <- lmer(fiscal_conservatism ~ str_c + (1|Number) + (1|stim_id), data = df_long)
+fisc_con_mod <- lmer(fiscal_conservatism ~ str_c 
+                     + (1|Number) + (1|stim_id),
+                     data = df_long)
 summary(fisc_con_mod)
 standardize_parameters(fisc_con_mod)
 
