@@ -4,15 +4,26 @@
 # body composition and politics, including ses
 ###############################################
 
-pckgs <- c('lme4', 'lmerTest', 'rstatix', 'haven', 'psych', 'car', 'tidyverse', 
-           'ggcorrplot', 'effectsize', 'ggpubr')
+pckgs <- c(
+  'lme4',
+  'lmerTest',
+  'rstatix',
+  'haven',
+  'psych',
+  'car',
+  'tidyverse',
+  'ggcorrplot',
+  'effectsize',
+  'ggpubr'
+)
 
-for (i in 1:length(pckgs)) {
-  if (!(pckgs[[i]] %in% installed.packages())) {
-    install.packages(pckgs[[i]])
+for (p in pckgs) {
+  if (!(p %in% installed.packages())) {
+    install.packages(p)
   }
-  lapply(pckgs[[i]], library, character.only = T)
+  lapply(p, library, character.only = T)
 }
+
 
 df <- read_sav('study 2/Strength Politics SES.sav')
 
@@ -127,7 +138,14 @@ df_main <- df_long %>%
   )
 
 
-mod_1 <- lmer(rating ~ str_c * ses_c * con_c + (1|id) + (1|stim_id), data = df_main)
+# model
+mod_1_int <- lmer(rating ~ str_c * ses_c * con_c 
+                  + (1|id) + (1|stim_id),
+                  data = df_main)
+mod_1 <- lmer(rating ~ str_c * ses_c * con_c 
+                  + (str_c|id) + (1|stim_id),
+                  data = df_main)
+anova(mod_1_int, mod_1)
 summary(mod_1)
 standardize_parameters(mod_1)
 

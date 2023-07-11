@@ -171,17 +171,24 @@ df_main <- df_long %>%
     con_c = ifelse(conservatism_type == 'fiscal', 1, -1)
   )
 
+# model
+mod_1_int <- lmer(rating ~ str_c * con_c 
+                  + (1|Number) + (1|stim_id),
+                  data = df_main)
 mod_1 <- lmer(rating ~ str_c * con_c 
               + (str_c|Number) + (1|stim_id),
               data = df_main)
+anova(mod_1_int, mod_1)
 summary(mod_1)
 standardize_parameters(mod_1)
 
+# descriptives
 df_main %>%
   group_by(strength) %>%
   get_summary_stats(rating, type = 'mean_sd')
 
 
+# summarize and plot
 plot_summ <- df_main %>%
   group_by(strength, conservatism_type) %>%
   get_summary_stats(rating, type = 'mean_ci')

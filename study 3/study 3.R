@@ -4,15 +4,27 @@
 # body composition and mfq endorsement
 #######################################
 
-pckgs <- c('lme4', 'lmerTest', 'rstatix', 'haven', 'psych', 'car', 'tidyverse', 
-           'ggcorrplot', 'effectsize', 'ggpubr', 'emmeans')
+pckgs <- c(
+  'lme4',
+  'lmerTest',
+  'rstatix',
+  'haven',
+  'psych',
+  'car',
+  'emmeans',
+  'tidyverse',
+  'ggcorrplot',
+  'effectsize',
+  'ggpubr'
+)
 
-for (i in 1:length(pckgs)) {
-  if (!(pckgs[[i]] %in% installed.packages())) {
-    install.packages(pckgs[[i]])
+for (p in pckgs) {
+  if (!(p %in% installed.packages())) {
+    install.packages(p)
   }
-  lapply(pckgs[[i]], library, character.only = T)
+  lapply(p, library, character.only = T)
 }
+
 
 df <- read_sav('study 3/Strength MFQ Perception.sav')
 
@@ -67,9 +79,22 @@ df_long <- df_cols %>%
   pivot_wider(names_from = 'item', values_from = 'response')
 
 df_long <- df_long %>%
-  mutate(tradition = rowMeans(df_long[, c('trad1', 'trad2', 'trad3', 'trad4')], na.rm = T),
-         compassion = rowMeans(df_long[, c('comn1', 'comn2', 'comn3', 'comn4')], na.rm = T),
-         liberty = rowMeans(df_long[, c('libr1', 'libr2', 'libr3', 'libr4')], na.rm = T)) %>%
+  mutate(
+    tradition = rowMeans(df_long[, c('trad1',
+                                     'trad2',
+                                     'trad3',
+                                     'trad4')],
+                         na.rm = T),
+    compassion = rowMeans(df_long[, c('comn1',
+                                      'comn2',
+                                      'comn3',
+                                      'comn4')],
+                          na.rm = T),
+    liberty = rowMeans(df_long[, c('libr1',
+                                   'libr2',
+                                   'libr3',
+                                   'libr4')],
+                       na.rm = T)) %>%
   select(
     id,
     stim_id,
@@ -119,7 +144,12 @@ df_main <- df_long %>%
   )
 
 
-mod_1 <- lmer(rating ~ strength * mfq_item + (1|id) + (1|stim_id), data = df_main)
+mod_1_int <- lmer(rating ~ strength * mfq_item 
+                  + (1|id) + (1|stim_id),
+                  data = df_main)
+mod_1 <- lmer(rating ~ strength * mfq_item 
+              + (strength|id) + (1|stim_id), data = df_main)
+anova(mod_1_int, mod_1)
 anova(mod_1)
 eta_squared(mod_1)
 
